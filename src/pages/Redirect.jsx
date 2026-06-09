@@ -58,7 +58,20 @@ const Redirect = () => {
     if (loading || error || !originalUrl) return;
 
     if (countdown === 0) {
-      window.location.replace(originalUrl);
+      console.log('Tentando redirecionar para:', originalUrl);
+      
+      // Garante que a URL tenha protocolo (http:// ou https://) para não redirecionar de forma relativa
+      let targetUrl = originalUrl.trim();
+      if (!/^https?:\/\//i.test(targetUrl)) {
+        targetUrl = 'https://' + targetUrl;
+      }
+      
+      try {
+        window.location.replace(targetUrl);
+      } catch (err) {
+        console.error('Falha ao usar window.location.replace:', err);
+        window.location.href = targetUrl;
+      }
       return;
     }
 
