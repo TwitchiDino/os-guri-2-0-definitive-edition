@@ -25,13 +25,20 @@ const Redirect = () => {
         if (linkDocSnap.exists()) {
           const linkData = linkDocSnap.data();
           setOriginalUrl(linkData.originalUrl);
-          
-          // Incrementa cliques de forma atômica no banco de dados
-          await updateDoc(linkDocRef, {
+
+          // Define loading como false ANTES de tentar incrementar
+          // para que o redirecionamento não seja bloqueado caso o increment falhe
+          setLoading(false);
+
+          // Incrementa cliques de forma assíncrona (fire-and-forget)
+          // Não usa await para não bloquear o redirecionamento
+          updateDoc(linkDocRef, {
             clicks: increment(1),
+          }).catch((err) => {
+            // Ignora erros de permissão no increment — o redirect ainda ocorre
+            console.warn('Aviso: não foi possível incrementar cliques:', err.message);
           });
 
-          setLoading(false);
         } else {
           setError('Link não encontrado.');
           setLoading(false);

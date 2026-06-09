@@ -23,6 +23,7 @@ const Dashboard = () => {
   const [loadingLinks, setLoadingLinks] = useState(true);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [lastCreatedLink, setLastCreatedLink] = useState(null);
 
   const neonStyles = {
     container: {
@@ -256,6 +257,7 @@ const Dashboard = () => {
     e.preventDefault();
     setError('');
     setSuccessMessage('');
+    setLastCreatedLink(null);
 
     if (!originalUrl.trim()) {
       setError('Por favor, insira uma URL válida.');
@@ -276,17 +278,20 @@ const Dashboard = () => {
         clicks: 0,
         createdAt: Timestamp.now(),
       });
-      setSuccessMessage(`Seu link foi encurtado com sucesso!`);
+      const shortUrl = `${window.location.origin}/r/${code}`;
+      setLastCreatedLink(shortUrl);
+      setSuccessMessage('Link encurtado com sucesso!');
       setOriginalUrl('');
     } catch (err) {
       console.error('Error adding document:', err);
-      setError('Erro ao encurtar o link.');
+      setError('Erro ao encurtar o link. Verifique as permissões do Firestore.');
     }
   };
 
   const handleDeleteLink = async (id) => {
     setError('');
     setSuccessMessage('');
+    setLastCreatedLink(null);
     try {
       await deleteDoc(doc(db, 'links', id));
       setSuccessMessage('Link excluído com sucesso!');
@@ -338,7 +343,49 @@ const Dashboard = () => {
           <button type="submit" style={neonStyles.shortenButton}>ENCURTAR</button>
         </form>
         {error && <p style={{ ...neonStyles.message, ...neonStyles.errorMessage }}>{error}</p>}
-        {successMessage && <p style={{ ...neonStyles.message, ...neonStyles.successMessage }}>{successMessage}</p>}
+        {successMessage && (
+          <div style={{ marginTop: '15px' }}>
+            <p style={{ ...neonStyles.message, ...neonStyles.successMessage, marginTop: 0 }}>
+              ✅ {successMessage}
+            </p>
+            {lastCreatedLink && (
+              <div style={{
+                marginTop: '10px',
+                padding: '14px 18px',
+                backgroundColor: 'rgba(0, 255, 102, 0.08)',
+                border: '2px solid #00ff66',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                flexWrap: 'wrap',
+                boxShadow: '0 0 12px rgba(0, 255, 102, 0.2)',
+              }}>
+                <a
+                  href={lastCreatedLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: '#00ff66',
+                    fontWeight: 'bold',
+                    wordBreak: 'break-all',
+                    flexGrow: 1,
+                    fontSize: '1em',
+                    textShadow: '0 0 6px rgba(0, 255, 102, 0.5)',
+                  }}
+                >
+                  {lastCreatedLink}
+                </a>
+                <button
+                  onClick={() => copyToClipboard(lastCreatedLink)}
+                  style={{ ...neonStyles.copyButton, whiteSpace: 'nowrap' }}
+                >
+                  Copiar Link
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
       <section style={neonStyles.section}>
