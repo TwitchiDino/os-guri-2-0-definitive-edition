@@ -60,9 +60,13 @@ const Redirect = () => {
     if (countdown === 0) {
       console.log('Tentando redirecionar para:', originalUrl);
       
-      // Garante que a URL tenha protocolo (http:// ou https://) para não redirecionar de forma relativa
       let targetUrl = originalUrl.trim();
-      if (!/^https?:\/\//i.test(targetUrl)) {
+      
+      // Verifica se a URL já começa com um esquema/protocolo válido (ex: http://, https://, data:, ftp://, mailto:)
+      // Um esquema válido começa com uma letra seguida por letras, números, +, - ou . e depois dois pontos (:)
+      const hasProtocol = /^[a-z][a-z0-9+.-]*:/i.test(targetUrl);
+      
+      if (!hasProtocol) {
         targetUrl = 'https://' + targetUrl;
       }
       
